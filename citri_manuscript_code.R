@@ -4,6 +4,8 @@ library(FSA)
 setwd("C:/Users/andre/Documents/Documents/Documents/CitriPopgen/mac ported data and code/")
 pcit6<-fread("Pcit.DTOL.matrix.v2.1.csv",stringsAsFactors = F)
 
+
+
 #adding Hollie's ASE data
 ase<-fread("hollie_ase_base.txt",header=T,stringsAsFactors = F)
 table(ase$lineage,ase$actually_sig)
@@ -317,3 +319,63 @@ summary(check)
 #Multiple R-squared:  0.01325,	Adjusted R-squared:  0.01099 
 #F-statistic: 5.843 on 1 and 435 DF,  p-value: 0.01605
 #is significant even without the paternally-biased points for leverage
+
+
+
+#let's prove that most "sex-biased" genes are in fact sex-limited
+pcit617<-pcit6[which(pcit6$Gene%in%pc17$gene),]
+hist(pcit617$SPM.F,breaks=50,
+     main="Many sex-biased genes are sex-limited in expression",
+     xlab="Proportion of expression in females")
+nrow(pcit617[which(pcit617$SPM.F>0.99),])
+#915
+nrow(pcit617[which(pcit617$SPM.F<0.01),])
+#613
+f617<-pcit617[which(pcit617$SPM.F>0.99),]
+m617<-pcit617[which(pcit617$SPM.F<0.01),]
+pc17f<-pc17[which(pc17$gene%in%f617$Gene),]
+pc17m<-pc17[which(pc17$gene%in%m617$Gene),]
+pc17f<-pc17f[which(pc17f$consistency=="female_biased"),]
+pc17m<-pc17m[which(pc17m$consistency=="male_biased"),]
+
+par(mfrow=c(1,2))
+boxplot(pc17f$pN.pS,outline=F,notch=T,xlim=c(0,3), las=1,ylab="pN/pS",
+        main="Scaled polymorphism of sex-limited genes")
+boxplot(pc17m$pN.pS,outline=F,notch=T,add=T,at=2,las=1)
+text("*",x=2, y=0.7,cex=2)
+mtext("Female-limited",side=1,adj=0.33,line=1)
+mtext("Male-limited",side=1,adj=0.66,line=1)
+wilcox.test(pc17f$pN.pS,pc17m$pN.pS)
+# = 2564, p-value = 0.0437
+
+boxplot(pc17f$dN.dS,outline=F,notch=T,xlim=c(0,3), las=1,ylab="dN/dS",
+        main="Scaled divergence of sex-limited genes")
+boxplot(pc17m$dN.dS,outline=F,notch=T,add=T,at=2,las=1)
+text("***",x=2, y=0.3,cex=2)
+mtext("Female-limited",side=1,adj=0.33,line=1)
+mtext("Male-limited",side=1,adj=0.66,line=1)
+wilcox.test(pc17f$dN.dS,pc17m$dN.dS)
+#W = 6846, p-value = 1.154e-07
+
+
+par(mfrow=c(2,2))
+boxplot(pc17f$alpha.simple,outline=F,notch=T,xlim=c(0,3),las=1,ylab=expression(alpha),main="Considering all variants")
+boxplot(pc17m$alpha.simple,outline=F,notch=T,add=T,at=2,las=1)
+wilcox.test(pc17f$alpha.simple,pc17m$alpha.simple)
+#W = 1369, p-value = 0.2974
+boxplot(pc17f$alpha.impmkt2,outline=F,notch=T,xlim=c(0,3),las=1,ylab=expression(alpha),main="Considering Pn > 0.2")
+boxplot(pc17m$alpha.impmkt2,outline=F,notch=T,add=T,at=2,las=1)
+wilcox.test(pc17f$alpha.impmkt2,pc17m$alpha.impmkt2)
+boxplot(pc17f$alpha.impmkt4,outline=F,notch=T,xlim=c(0,3),las=1,ylab=expression(alpha),main="Considering Pn > 0.4")
+boxplot(pc17m$alpha.impmkt4,outline=F,notch=T,add=T,at=2,las=1)
+wilcox.test(pc17f$alpha.impmkt4,pc17m$alpha.impmkt4)
+mtext("Female-limited",side=1,adj=0.33,line=1)
+mtext("Male-limited",side=1,adj=0.66,line=1)
+
+boxplot(pc17f$alpha.impmkt5,outline=F,notch=T,xlim=c(0,3),las=1,ylab=expression(alpha),main="Considering Pn > 0.5")
+boxplot(pc17m$alpha.impmkt5,outline=F,notch=T,add=T,at=2,las=1)
+wilcox.test(pc17f$alpha.impmkt5,pc17m$alpha.impmkt5)
+mtext("Female-limited",side=1,adj=0.33,line=1)
+mtext("Male-limited",side=1,adj=0.66,line=1)
+
+
